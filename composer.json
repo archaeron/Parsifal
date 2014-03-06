@@ -3,6 +3,7 @@
         "phpunit/phpunit": "3.7.*"
     },
     "require": {
-    	"traitorous/tuple": "dev-master"
+    	"traitorous/tuple": "dev-master",
+    	"phpoption/phpoption": "dev-master"
     }
 }

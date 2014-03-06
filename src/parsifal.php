@@ -1,6 +1,10 @@
 <?php
 
 include 'vendor/autoload.php';
+use PhpOption\Option as Option;
+use PhpOption\Some as Some;
+use PhpOption\None as None;
+use traitorous\Tuple2 as Tuple;
 
 function parse($parser, $input)
 {
@@ -11,7 +15,7 @@ function success($v)
 {
 	return function($inp) use ($v)
 	{
-		return [new traitorous\Tuple2($v, $inp)];
+		return new Some(new Tuple($v, $inp));
 	};
 }
 
@@ -19,7 +23,7 @@ function failure()
 {
 	return function()
 	{
-		return [];
+		return None::create();
 	};
 }
 
@@ -27,50 +31,64 @@ function item()
 {
 	return function($inp)
 	{
-		if($inp == "")
+		if($inp === '')
 		{
-			return [];
+			return None::create();
 		}
 		else
 		{
-			return [new traitorous\Tuple2(head($inp), tail($inp))];
+			return new Some(new Tuple(str_head($inp), str_tail($inp)));
 		}
 	};
 }
 
-function bind($p, $func)
+function flatMap($p, $func)
 {
 	return function($inp) use ($p, $func)
 	{
 		$result_p = parse($p, $inp);
-		if($result_p === [])
-		{
-			return [];
-		}
-		else
-		{
-			$v = $result_p[0]->_1();
-			$out = $result_p[0]->_2();
-			$f = $func($v);
-			return $f($out);
-		}
+
+		return $result_p->flatMap(function($res) use ($func)
+			{
+				$value = value($res);
+				$rest = rest($res);
+				$f = $func($value);
+				return $f($rest);
+			}
+		);
 	};
+}
+
+function map($p, $func)
+{
+	return flatMap($p, function($value) use ($func)
+		{
+			return success($func($value));
+		}
+	);
 }
 
 function seq2($a, $b)
 {
-	return bind($a, function($out_a) use ($b)
+	return flatMap($a, function($out_a) use ($b)
 		{
-			return bind($b, function($out_b) use ($out_a)
+			return flatMap($b, function($out_b) use ($out_a)
 				{
-					if(!is_array($out_a))
-					{
-						$out_a = [$out_a];
-					}
-					$out_a = prepend($out_b, $out_a);
-					return success($out_a);
+					if(! is_array($out_a)) $out_a = [$out_a];
+					if(! is_array($out_b)) $out_b = [$out_b];
+
+					return success(array_merge($out_a, $out_b));
 				}
 			);
+		}
+	);
+}
+
+function seq2_str($a, $b)
+{
+	return map(seq2($a, $b), function($val)
+		{
+			return implode('', $val);
 		}
 	);
 }
@@ -89,6 +107,20 @@ function seq()
 	return $p;
 }
 
+function seq_str()
+{
+	$parsers = func_get_args();
+
+	$p = success([]);
+
+	foreach ($parsers as $parser)
+	{
+		$p = seq2_str($p, $parser);
+	}
+
+	return $p;
+}
+
 function choice()
 {
 	$parsers = func_get_args();
@@ -97,19 +129,19 @@ function choice()
 	{
 		foreach($parsers as $parser)
 		{
-			$out = $parser($inp);
-			if($out !== [])
+			$out = parse($parser, $inp);
+			if(! $out->isEmpty())
 			{
 				return $out;
 			}
 		}
-		return [];
+		return None::create();
 	};
 }
 
 function satisfies($p)
 {
-	return bind(item(), function($x) use ($p)
+	return flatMap(item(), function($x) use ($p)
 		{
 			if($p($x))
 			{
@@ -166,10 +198,10 @@ function str($s)
 {
 	return function($inp) use ($s)
 	{
-		$length = strlen($s);
-		if($length > strlen($inp))
+		$length = str_length($s);
+		if($length > str_length($inp))
 		{
-			return [];
+			return None::create();
 		}
 		else
 		{
@@ -177,11 +209,11 @@ function str($s)
 			$end = substr($inp, $length);
 			if($start === $s)
 			{
-				return [new traitorous\Tuple2($start, $end)];
+				return new Some(new Tuple($start, $end));
 			}
 			else
 			{
-				return [];
+				return None::create();
 			}
 		}
 	};
@@ -191,59 +223,86 @@ function many($p)
 {
 	return function($inp) use ($p)
 	{
-		$vs = [];
+		$values = '';
 		$out = $inp;
 
 		do
 		{
-			$result_p = $p($out);
+			$result_p = parse($p, $out);
 
-			if($result_p === [])
+			if($result_p->isEmpty())
 			{
 				break;
 			}
+			$r = $result_p->get();
 
-			$v = $result_p[0]->_1();
-			$out = $result_p[0]->_2();
+			$value = value($r);
+			$out = rest($r);
 
-			$vs = prepend($v, $vs);
+			$values = $values.$value;
 		}
 		while($out !== "");
-		return [new traitorous\Tuple2(char_array_to_string($vs), $out)];
+		return new Some(new Tuple($values, $out));
 	};
 }
 
 function many1($p)
 {
-	return seq_to_string(seq($p, many($p)));
+	return seq2_str($p, many($p));
 }
 
 function ident()
 {
-	return seq_to_string(seq(lower(), many(alphanum())));
+	return seq2_str(lower(), many(alphanum()));
 }
 
 function nat()
 {
-	return bind(many1(digit()), function($nr)
+	return map(many1(digit()), function($nr)
 		{
-			return success(intval($nr));
+			return intval($nr->toString());
 		}
 	);
 }
 
 function space()
 {
-	return bind(many(satisfies('ctype_space')), function()
+	return flatMap(many(satisfies('ctype_space')), function()
 		{
-			return success("");
+			return success('');
 		}
 	);
 }
 
+function between_left_right($left, $right)
+{
+	return function($p) use ($left, $right)
+	{
+		return flatMap($left, function() use ($p, $right)
+			{
+				return flatMap($p, function($result) use ($right)
+					{
+						return flatMap($right, function() use ($result)
+							{
+								return success($result);
+							}
+						);
+					}
+				);
+			}
+		);
+	};
+}
+
+function between($ignore)
+{
+	return between_left_right($ignore, $ignore);
+}
+
 function token($p)
 {
-	return seq_to_string(seq(space(), $p, space()));
+	$tp = between(space());
+	return $tp($p);
 }
 
 function identifier()
@@ -263,7 +322,7 @@ function symbol($s)
 
 function ignore($p)
 {
-	return bind($p, function() { return success(""); } );
+	return flatMap($p, function() { return success(String::zero()); } );
 }
 
 // helper functions
@@ -275,65 +334,29 @@ function flatten(array $ary)
 	return $flat;
 }
 
-function char_array_to_string($char_array)
+function str_head($str)
 {
-	return implode("", flatten($char_array));
+	return substr($str, 0, 1);
 }
 
-function prepend($head, $tail)
+function str_tail($str)
 {
-	if(is_string($tail))
-	{
-		$tail = $head.$tail;
-	}
-	else
-	{
-		array_unshift($tail, $head);
-	}
-	return $tail;
+	return substr($str, 1);
 }
 
-function head($col)
+function str_length($str)
 {
-	if(is_string($col))
-	{
-		return substr($col, 0, 1);
-	}
-	else
-	{
-		foreach ($col as $value)
-		{
-			return $value;
-		}
-	}
+	return strlen($str);
 }
 
-function tail($col)
+function value(Tuple $t)
 {
-	if(is_string($col))
-	{
-		return substr($col, 1);
-	}
-	else
-	{
-		return array_slice($col, 1);
-	}
+	return $t->_1();
 }
 
-function seq_to_string($seq)
+function rest(Tuple $t)
 {
-	return function($inp) use ($seq)
-	{
-		$result = $seq($inp);
-		if($result !== [])
-		{
-			$v = $result[0]->_1();
-			if(is_array($v))
-			{
-				$result = [new traitorous\Tuple2(char_array_to_string($v), $result[0]->_2())];
-			}
-		}
-		return $result;
-	};
+	return $t->_2();
 }
+
 ?>
