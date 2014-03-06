@@ -223,7 +223,7 @@ function many($p)
 {
 	return function($inp) use ($p)
 	{
-		$values = '';
+		$values = [];
 		$out = $inp;
 
 		do
@@ -239,11 +239,16 @@ function many($p)
 			$value = value($r);
 			$out = rest($r);
 
-			$values = $values.$value;
+			$values[] = $value;
 		}
 		while($out !== "");
 		return new Some(new Tuple($values, $out));
 	};
+}
+
+function many_str($p)
+{
+	return map(many($p), 'array_to_string');
 }
 
 function many1($p)
@@ -260,7 +265,7 @@ function nat()
 {
 	return map(many1(digit()), function($nr)
 		{
-			return intval($nr->toString());
+			return intval($nr);
 		}
 	);
 }
@@ -322,10 +327,15 @@ function symbol($s)
 
 function ignore($p)
 {
-	return flatMap($p, function() { return success(String::zero()); } );
+	return flatMap($p, function() { return success(''); } );
 }
 
 // helper functions
+
+function array_to_string($arr)
+{
+	return implode('', $arr);
+}
 
 function flatten(array $ary)
 {

@@ -256,11 +256,24 @@ class ParsifalTest extends PHPUnit_Framework_TestCase
 	*/
 	public function many_parser()
 	{
-	    $this->assertEquals(new Tuple('123', 'abc'), parse(many(digit()), '123abc')->get());
-	    $this->assertEquals(new Tuple('123abc', '%*'), parse(many(alphanum()), '123abc%*')->get());
-	    $this->assertEquals(new Tuple('', 'abcdef'), parse(many(digit()), 'abcdef')->get());
-	    $this->assertEquals(new Tuple('a', ' bcd'), parse(many(alphanum()), 'a bcd')->get());
+	    $this->assertEquals(new Tuple(['1', '2', '3'], 'abc'), parse(many(digit()), '123abc')->get());
+	    $this->assertEquals(new Tuple(['1', '2', '3', 'a', 'b', 'c'], '%*'), parse(many(alphanum()), '123abc%*')->get());
+	    $this->assertEquals(new Tuple([], 'abcdef'), parse(many(digit()), 'abcdef')->get());
+	    $this->assertEquals(new Tuple(['a'], ' bcd'), parse(many(alphanum()), 'a bcd')->get());
 	}
+
+	/**
+	* @test
+	* @covers ::many_str
+	*/
+	public function many_str_parser()
+	{
+	    $this->assertEquals(new Tuple('123', 'abc'), parse(many_str(digit()), '123abc')->get());
+	    $this->assertEquals(new Tuple('123abc', '%*'), parse(many_str(alphanum()), '123abc%*')->get());
+	    $this->assertEquals(new Tuple('', 'abcdef'), parse(many_str(digit()), 'abcdef')->get());
+	    $this->assertEquals(new Tuple('a', ' bcd'), parse(many_str(alphanum()), 'a bcd')->get());
+	}
+
 
 	/**
 	* @test
@@ -289,23 +302,24 @@ class ParsifalTest extends PHPUnit_Framework_TestCase
 	*/
 	public function between_left_right_parser()
 	{
-		$this->assertEquals(new Tuple('', 'abc'), parse(between_left_right(char('['), char(']')), '[abc]')->get());
-		$this->assertEquals(new Tuple('', 'abc 123'), parse(between_left_right(), 'abc 123')->get());
+		$between = between_left_right(char('['), char(']'));
+		$this->assertEquals(new Tuple('abc', ''), parse($between(str('abc')), '[abc]')->get());
+		$this->assertTrue(parse($between(str('abc')), 'abc 123')->isEmpty());
 	}
 
-	// /**
-	// * @test
-	// * @covers ::ident, ::identifier
-	// */
-	// public function identifier_parser()
-	// {
-	// 	$this->assertEquals(new Tuple("abc"), " def")), parse(ident(), "abc def")->get());
-	// 	$this->assertEquals(new Tuple("a"), " bcdef")), parse(ident(), "a bcdef")->get());
-	// 	$this->assertTrue(parse(ident(), " abc def")->isEmpty());
-	// 	$this->assertEquals(new Tuple("abc"), "")), parse(identifier(), "    abc     ")->get());
-	// 	$this->assertEquals(new Tuple("abc"), "123")), parse(identifier(), " abc 123")->get());
-	// 	$this->assertTrue(parse(identifier(), " {} abc 123")->isEmpty());
-	// }
+	/**
+	* @test
+	* @covers ::ident, ::identifier
+	*/
+	public function identifier_parser()
+	{
+		$this->assertEquals(new Tuple("abc", " def"), parse(ident(), "abc def")->get());
+		$this->assertEquals(new Tuple("a", " bcdef"), parse(ident(), "a bcdef")->get());
+		$this->assertTrue(parse(ident(), " abc def")->isEmpty());
+		$this->assertEquals(new Tuple("abc", ""), parse(identifier(), "    abc     ")->get());
+		$this->assertEquals(new Tuple("abc", "123"), parse(identifier(), " abc 123")->get());
+		$this->assertTrue(parse(identifier(), " {} abc 123")->isEmpty());
+	}
 
 	/**
 	* @test
@@ -313,55 +327,52 @@ class ParsifalTest extends PHPUnit_Framework_TestCase
 	*/
 	public function natural_parser()
 	{
-		// $this->assertEquals(new Tuple(123, " abc")), parse(nat(), "123 abc")->get());
-		// $this->assertTrue(parse(nat(), "abc 123"))->isEmpty());
-		// $this->assertEquals(new Tuple(123, "")), parse(natural(), "    123     ")->get());
-		// $this->assertEquals(new Tuple(123, "123")), parse(natural(), " 123 123")->get());
-		// $this->assertEquals(new Tuple(123, "123 ")), parse(natural(), " 123 123 ")->get());
-		// $this->assertTrue(parse(natural(), "    abc     ")->isEmpty());
+		$this->assertEquals(new Tuple(123, " abc"), parse(nat(), "123 abc")->get());
+		$this->assertTrue(parse(nat(), "abc 123")->isEmpty());
+		$this->assertEquals(new Tuple(123, ""), parse(natural(), "    123     ")->get());
+		$this->assertEquals(new Tuple(123, "123"), parse(natural(), " 123 123")->get());
+		$this->assertEquals(new Tuple(123, "123 "), parse(natural(), " 123 123 ")->get());
+		$this->assertTrue(parse(natural(), "    abc     ")->isEmpty());
 	}
 
-	// /**
-	// * @test
-	// * @covers ::symbol
-	// */
-	// public function symbol_parser()
-	// {
-	// 	$this->assertEquals(new Tuple("for"), "abc")), parse(symbol("for"), "for abc")->get());
-	// 	$this->assertEquals(new Tuple("for"), "abc")), parse(symbol("for"), " for abc")->get());
-	// 	$this->assertTrue(parse(symbol("for"), "abc 123")->isEmpty());
-	// }
+	/**
+	* @test
+	* @covers ::symbol
+	*/
+	public function symbol_parser()
+	{
+		$this->assertEquals(new Tuple("for", "abc"), parse(symbol("for"), "for abc")->get());
+		$this->assertEquals(new Tuple("for", "abc"), parse(symbol("for"), " for abc")->get());
+		$this->assertTrue(parse(symbol("for"), "abc 123")->isEmpty());
+	}
 
-	// /**
-	// * @test
-	// * @covers ::symbol
-	// */
-	// public function list_parser()
-	// {
-	// 	$successive_elements = many(
-	// 		flatMap(symbol(","),
-	// 			function()
-	// 			{
+	/**
+	* @test
+	* @covers ::symbol
+	*/
+	public function list_parser()
+	{
+		$successive_element = map(seq(symbol(","), natural()), function($elements)
+			{
+				return $elements[1];
+			}
+		);
 
-	// 			}
-	// 		)
-	// 	);
-	// 	$list_elements = seq(natural(), many(seq(symbol(","), natural())));
-	// 	$evaluated_elements = flatMap($list_elements, function($elems)
-	// 		{
-	// 			var_dump($elems);
-	// 			return success($elems);
-	// 		}
-	// 	);
-	// 	$betweenBrackets = between_left_right(symbol("["), symbol("]"));
-	// 	$list = $betweenBrackets($evaluated_elements);
+		$successive_elements = many($successive_element);
+		$this->assertEquals(new Tuple([5, 6], ''), parse($successive_elements, ',5,6')->get());
 
-	// 	$parsed = parse($list, "[1,2,3]");
-	// 	$ast = $parsed[0]->_1();
+		$list_elements = seq(natural(), $successive_elements);
+		$this->assertEquals(new Tuple([4, 5, 6], ''), parse($list_elements, '4,5,6')->get());
+		$this->assertEquals(new Tuple([4, 5, 6], 'sdfkjghsdkj'), parse($list_elements, '4,5,6sdfkjghsdkj')->get());
 
-	// 	$this->assertEquals([1, [2], 3], $ast);
-	// 	$this->assertEquals(new Tuple([1, 2, 3], ""), parse($list, "[1, 2, 3]"));
-	// 	$this->assertEquals([], parse(symbol("for"), "[1,2,]"));
-	// }
+		$betweenBrackets = between_left_right(symbol("["), symbol("]"));
+		$list = $betweenBrackets($list_elements);
+
+		$this->assertEquals(new Tuple([4, 5, 6], ''), parse($list, '[4,5,6]')->get());
+		$this->assertEquals(new Tuple([4, 5, 6], ''), parse($list, '[4, 5, 6]')->get());
+		$this->assertEquals(new Tuple([4, 5, 6], ''), parse($list, '[ 4 , 5 , 6 ]')->get());
+
+		$this->assertTrue(parse($list, '[ 4 , 5 , ads ]')->isEmpty());
+	}
 
 }
