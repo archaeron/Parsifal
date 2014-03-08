@@ -64,7 +64,7 @@ parse :: (Parser, String) -> Result
 ```
 
 ```php
-parse(success(1), 'Parse me');
+parse(success(1), 'abc'); // => Some(Tuple(1, 'abc'))
 ```
 
 ### success
@@ -75,6 +75,10 @@ Returns a parser, that always succeeds with a certain value and doesn't consume 
 success :: a -> Parser a
 ```
 
+```php
+parse(success(1), 'Parse me'); // => Some(Tuple(1, 'Parse me'))
+```
+
 ### failure
 
 Returns a parser, that always fails.
@@ -82,3 +86,16 @@ Returns a parser, that always fails.
 ```haskell
 failure :: Parser a
 ```
+
+### item
+
+Returns the first char in the string.
+
+```haskell
+item :: Parser char
+```
+
+```php
+parse(item(), 'abc'); // => Some(Tuple('a', 'bc'))
+```
+
