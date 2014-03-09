@@ -202,17 +202,32 @@ str :: String -> Parser String
 
 ### many
 
+
+
 ### many_str
 
 ### many1
 
 ### ident
 
+Parses an identifier (lowercase letter, followed by an arbitrary number of alphanimeric characters).
+
+```haskell
+ident :: Parser String
+```
+
 ### nat
 
 ### space
 
 ### between_left_right
+
+Parses something between two other things, ignoring the return value of the enclosing parsers.
+
+```haskell
+between_left_right :: (Parser a, Parser b) -> Parser c -> Parser c
+```
+
 
 ### between
 
