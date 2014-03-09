@@ -1,6 +1,7 @@
 # Parsifal
 
 Parsifal is a parser combinator library written in PHP.
+It is heavily inspired (like translated to  PHP) from Graham Huttons 'Programming in Haskell'.
 
 
 ## Example
