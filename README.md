@@ -186,7 +186,19 @@ alphanum :: Parser Char
 
 ### char
 
+Check for a certain char at the beginning of the text.
+
+```haskell
+char :: Char -> Parser Char
+```
+
 ### str
+
+Check if the text starts with a certain string.
+
+```haskell
+str :: String -> Parser String
+```
 
 ### many
 
