@@ -92,10 +92,90 @@ failure :: Parser a
 Returns the first char in the string.
 
 ```haskell
-item :: Parser char
+item :: Parser Char
 ```
 
 ```php
 parse(item(), 'abc'); // => Some(Tuple('a', 'bc'))
 ```
+
+### flatMap
+
+```haskell
+flatMap :: (Parser a, (a -> Parser b) -> Parser b
+```
+
+```php
+```
+
+### map
+
+### seq2
+
+```haskell
+seq2 :: (Parser a, Parser b) -> Parser [a, b]
+```
+
+### seq
+
+### seq_str
+
+### choice
+
+```haskell
+choice :: 
+```
+
+### satisfies
+
+Checks if the next char in the text satisfies a certain predicate.
+
+```haskell
+satisfies :: (Char -> Bool) -> Parser char
+```
+
+```php
+parse(satisfies(function($inp){ return $inp === '1';}), '123'); // => Some(Tuple('1', '23'))
+```
+
+### digit
+
+### lower
+
+### upper
+
+### letter
+
+### alphanum
+
+### char
+
+### str
+
+### many
+
+### many_str
+
+### many1
+
+### ident
+
+### nat
+
+### space
+
+### between_left_right
+
+### between
+
+### token
+
+### identifier
+
+### natural
+
+### symbol
+
+### ignore
+
 
