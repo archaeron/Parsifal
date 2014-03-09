@@ -170,7 +170,19 @@ upper :: Parser Char
 
 ### letter
 
+Parses a letter from the alphabet. (uses [ctype_alpha](http://www.php.net/manual/en/function.ctype-alpha.php))
+
+```haskell
+letter :: Parser Char
+```
+
 ### alphanum
+
+Parses an alphanumeric character. (uses [ctype_alnum](http://www.php.net/manual/en/function.ctype_alnum.php))
+
+```haskell
+alphanum :: Parser Char
+```
 
 ### char
 
