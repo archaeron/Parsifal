@@ -202,7 +202,19 @@ str :: String -> Parser String
 
 ### many
 
+Parses many occurrences of a certain parser.
+
+```haskell
+many :: Parser a -> Parser [a]
+```
+
 ### many_str
+
+Parses many occurrences of a certain parser and concatenates them to a string.
+
+```haskell
+many_str :: Parser a -> Parser String
+```
 
 ### many1
 
