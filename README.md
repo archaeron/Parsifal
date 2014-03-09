@@ -10,6 +10,10 @@ It is heavily inspired (like translated to  PHP) from Graham Huttons 'Programmin
 ```php
 	// parses ',' + a natural number and returns [",", number]
 	$comma_natural = seq(symbol(","), natural();
+use PhpOption\Option as Option;
+use PhpOption\Some as Some;
+use PhpOption\None as None;
+use traitorous\Tuple2 as Tuple;
 
 	// returns the natural number parsed as an integer
 	$successive_element = map($comma_natural,
