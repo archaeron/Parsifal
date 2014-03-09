@@ -103,13 +103,18 @@ parse(item(), 'abc'); // => Some(Tuple('a', 'bc'))
 ### flatMap
 
 ```haskell
-flatMap :: (Parser a, (a -> Parser b) -> Parser b
+flatMap :: (Parser a, (a -> Parser b)) -> Parser b
 ```
 
 ```php
+$flatMap = 
 ```
 
 ### map
+
+```haskell
+map :: (Parser a, (a -> b)) -> Parser b
+```
 
 ### seq2
 
@@ -132,7 +137,7 @@ choice ::
 Checks if the next char in the text satisfies a certain predicate.
 
 ```haskell
-satisfies :: (Char -> Bool) -> Parser char
+satisfies :: (Char -> Bool) -> Parser Char
 ```
 
 ```php
@@ -141,9 +146,27 @@ parse(satisfies(function($inp){ return $inp === '1';}), '123'); // => Some(Tuple
 
 ### digit
 
+Parses a single integer.
+
+```haskell
+digit :: Parser Integer
+```
+
 ### lower
 
+Parses a lowercase character.
+
+```haskell
+lower :: Parser Char
+```
+
 ### upper
+
+Parses an uppercase character.
+
+```haskell
+upper :: Parser Char
+```
 
 ### letter
 
