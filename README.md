@@ -149,7 +149,7 @@ parse(satisfies(function($inp){ return $inp === '1';}), '123'); // => Some(Tuple
 Parses a single integer.
 
 ```haskell
-digit :: Parser Integer
+digit :: Parser Int
 ```
 
 ### lower
@@ -202,8 +202,6 @@ str :: String -> Parser String
 
 ### many
 
-
-
 ### many_str
 
 ### many1
@@ -218,7 +216,15 @@ ident :: Parser String
 
 ### nat
 
+```haskell
+nat :: Parser Int
+```
+
 ### space
+
+```haskell
+space :: Parser ""
+```
 
 ### between_left_right
 
@@ -231,13 +237,37 @@ between_left_right :: (Parser a, Parser b) -> Parser c -> Parser c
 
 ### between
 
+This is a shorthand for `between_left_right($parser, $parser)`.
+
+```haskell
+between :: Parser a -> Parser b -> Parser b
+```
+
 ### token
+
+Parses a token (i.e. something between spaces).
+
+```haskell
+token :: Parser a -> Parser a
+```
 
 ### identifier
 
+```haskell
+identifier :: Parser String
+```
+
 ### natural
 
+```haskell
+natural :: Parser Int
+```
+
 ### symbol
+
+```haskell
+symbol :: String -> Parser String
+```
 
 ### ignore
 
