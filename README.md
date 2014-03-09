@@ -8,46 +8,47 @@ It is heavily inspired (like translated to  PHP) from Graham Huttons 'Programmin
 
 
 ```php
-	// parses ',' + a natural number and returns [",", number]
-	$comma_natural = seq(symbol(","), natural();
 use PhpOption\Option as Option;
 use PhpOption\Some as Some;
 use PhpOption\None as None;
 use traitorous\Tuple2 as Tuple;
 
-	// returns the natural number parsed as an integer
-	$successive_element = map($comma_natural,
-		function($elements)
-		{
-			return $elements[1];
-		}
-	);
+// parses ',' + a natural number and returns [",", number]
+$comma_natural = seq(symbol(","), natural();
 
-	$this->assertEquals(new Tuple(6, ''), parse($list_elements, ',6')->get());
+// returns the natural number parsed as an integer
+$successive_element = map($comma_natural,
+	function($elements)
+	{
+		return $elements[1];
+	}
+);
 
-	// parses an arbitrary number of '$successive_element's
-	$successive_elements = many($successive_element);
+$this->assertEquals(new Tuple(6, ''), parse($list_elements, ',6')->get());
 
-	$this->assertEquals(new Tuple([5, 6], ''), parse($successive_elements, ',5,6')->get());
+// parses an arbitrary number of '$successive_element's
+$successive_elements = many($successive_element);
 
-	// the elements in the list are made of a natural number and of '$successive_elements'
-	$list_elements = seq(natural(), $successive_elements);
+$this->assertEquals(new Tuple([5, 6], ''), parse($successive_elements, ',5,6')->get());
 
-	$this->assertEquals(new Tuple([4, 5, 6], ''), parse($list_elements, '4,5,6')->get());
-	$this->assertEquals(new Tuple([4, 5, 6], 'sdfkjghsdkj'), parse($list_elements, '4,5,6sdfkjghsdkj')->get());
+// the elements in the list are made of a natural number and of '$successive_elements'
+$list_elements = seq(natural(), $successive_elements);
 
-	// returns a function, that accepty a parser and then returns a new parser
-	// between_left_right :: (Parser, Parser) -> Parser -> Parser
-	$betweenBrackets = between_left_right(symbol("["), symbol("]"));
+$this->assertEquals(new Tuple([4, 5, 6], ''), parse($list_elements, '4,5,6')->get());
+$this->assertEquals(new Tuple([4, 5, 6], 'sdfkjghsdkj'), parse($list_elements, '4,5,6sdfkjghsdkj')->get());
 
-	// a list should have brackets around it
-	$list = $betweenBrackets($list_elements);
+// returns a function, that accepty a parser and then returns a new parser
+// between_left_right :: (Parser, Parser) -> Parser -> Parser
+$betweenBrackets = between_left_right(symbol("["), symbol("]"));
 
-	$this->assertEquals(new Tuple([4, 5, 6], ''), parse($list, '[4,5,6]')->get());
-	$this->assertEquals(new Tuple([4, 5, 6], ''), parse($list, '[4, 5, 6]')->get());
-	$this->assertEquals(new Tuple([4, 5, 6], ''), parse($list, '[ 4 , 5 , 6 ]')->get());
+// a list should have brackets around it
+$list = $betweenBrackets($list_elements);
 
-	$this->assertTrue(parse($list, '[ 4 , 5 , ads ]')->isEmpty());
+$this->assertEquals(new Tuple([4, 5, 6], ''), parse($list, '[4,5,6]')->get());
+$this->assertEquals(new Tuple([4, 5, 6], ''), parse($list, '[4, 5, 6]')->get());
+$this->assertEquals(new Tuple([4, 5, 6], ''), parse($list, '[ 4 , 5 , 6 ]')->get());
+
+$this->assertTrue(parse($list, '[ 4 , 5 , ads ]')->isEmpty());
 ```
 
 ## Functions
