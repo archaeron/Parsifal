@@ -202,18 +202,26 @@ str :: String -> Parser String
 
 ### many
 
-Parses many occurrences of a certain parser.
+Parses zero or more occurrences of a certain parser.
 
 ```haskell
 many :: Parser a -> Parser [a]
 ```
 
+```php
+parse(many(digit()), '123abc'); // => Option(Tuple(['1', '2', '3'], 'abc'))
+```
+
 ### many_str
 
-Parses many occurrences of a certain parser and concatenates them to a string.
+Parses zero or more occurrences of a certain parser and concatenates them to a string.
 
 ```haskell
 many_str :: Parser a -> Parser String
+```
+
+```php
+parse(many_str(digit()), '123abc'); // => Option(Tuple('123', 'abc'))
 ```
 
 ### many1
