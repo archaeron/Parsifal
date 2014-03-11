@@ -63,7 +63,7 @@ type Parser a = String -> Option (a, String)
 
 ### parse
 
-Apply a String to a parser
+Apply a parser to a string.
 
 ```haskell
 parse :: (Parser, String) -> Result
@@ -134,7 +134,7 @@ seq2 :: (Parser a, Parser b) -> Parser [a, b]
 ### choice
 
 ```haskell
-choice :: (Parser a, Parser b, ..., Parser n) -> Parser a || Parser b || Parser n
+choice :: (Parser a, Parser b, ..., Parser n) -> Parser a || Parser b || ... || Parser n
 ```
 ```php
 parse(choice(failure(), success('d')), 'abc'); // => Some(Tuple('d', 'abc'))
