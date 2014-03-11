@@ -58,7 +58,7 @@ $this->assertTrue(parse($list, '[ 4 , 5 , ads ]')->isEmpty());
 A function that returns a function thet returns an Option Tpme with a Tuple in it. The left side of the Tuple is the parsed text, and the right side the remainder of the string.
 
 ```haskell
-Parser a :: String -> Option (a, String) 
+type Parser a = String -> Option (a, String) 
 ```
 
 ### parse
