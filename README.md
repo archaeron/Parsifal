@@ -14,7 +14,7 @@ use PhpOption\None as None;
 use traitorous\Tuple2 as Tuple;
 
 // parses ',' + a natural number and returns [",", number]
-$comma_natural = seq(symbol(","), natural();
+$comma_natural = seq(symbol(","), natural());
 
 // returns the natural number parsed as an integer
 $successive_element = map($comma_natural,
@@ -55,15 +55,15 @@ $this->assertTrue(parse($list, '[ 4 , 5 , ads ]')->isEmpty());
 
 ### Parser
 
-A function that returns a function thet returns an Option Tpme with a Tuple in it. The left side of the Tuple is the parsed text, and the right side the remainder of the string.
+A function that returns a function that returns an Option Type with a Tuple in it. The left side of the Tuple is the parsed text, and the right side the remainder of the string.
 
 ```haskell
-type Parser a = String -> Option (a, String) 
+type Parser a = String -> Option (a, String)
 ```
 
 ### parse
 
-Parser application to a string
+Apply a String to a parser
 
 ```haskell
 parse :: (Parser, String) -> Result
@@ -112,7 +112,7 @@ flatMap :: (Parser a, (a -> Parser b)) -> Parser b
 ```
 
 ```php
-$flatMap = 
+$flatMap =
 ```
 
 ### map
@@ -134,7 +134,11 @@ seq2 :: (Parser a, Parser b) -> Parser [a, b]
 ### choice
 
 ```haskell
-choice :: 
+choice :: (Parser a, Parser b, ..., Parser n) -> Parser a || Parser b || Parser n
+```
+```php
+parse(choice(failure(), success('d')), 'abc'); // => Some(Tuple('d', 'abc'))
+parse(choice(failure(), failure()), 'abc'); // => None()
 ```
 
 ### satisfies
